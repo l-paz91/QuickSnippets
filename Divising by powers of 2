@@ -1,0 +1,23 @@
+int main()
+{
+	int num = 300;
+	int remain = 0;
+	int div = 0;
+	bool cont = false;
+
+	cout << "Num: " << num << endl;
+	while (!cont)
+	{
+		cout << "Is " << num << " divisible by 3?";
+		div = num/3;
+		remain = num & 0x2;
+		bool result = (num & 0x2) == 0;
+		cout << " >> " << std::boolalpha << result << " --- div by: " << div << " --- remain: " << remain << endl;
+
+		cout << "\nNew num: ";
+		cin >> num;
+	}
+
+	keep_window_open();
+	return 0;
+}
