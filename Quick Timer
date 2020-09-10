@@ -1,0 +1,25 @@
+#define _CRT_SECURE_NO_WARNINGS
+
+//--INCLUDES--//
+
+#include <iostream>
+#include <chrono>
+#include <ctime>
+#include <Windows.h>
+using namespace std;
+
+// -----------------------------------------------------------------------------
+
+int main()
+{
+	while (true)
+	{
+		time_t t = time(0);
+		tm* currentTime = localtime(&t);
+		cout << currentTime->tm_hour << ":" << currentTime->tm_min << ":" << currentTime->tm_sec << endl;
+		Sleep(1000);
+		system("CLS");
+	}
+
+	return 0;
+}
