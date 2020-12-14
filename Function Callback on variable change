@@ -1,0 +1,60 @@
+//--INCLUDES--//
+#include "std_lib_facilities.h"
+#include <functional>
+
+// -----------------------------------------------------------------------------
+
+template<typename T>
+struct Property
+{
+	Property(T value, function<void(T)>& callback)
+		: mData(value)
+		, mCallback(callback)
+	{}
+
+	Property& operator=(const T& newValue)
+	{
+		mData = newValue;
+		mCallback(mData);
+		return *this;
+	}
+
+	operator T() const {return mData;}
+
+	T mData;
+	function<void(T)> mCallback;
+};
+
+struct Vector2D
+{
+	Vector2D(int x, int y, function<void(int)> callback)
+		: mX(x, callback)
+		, mY(y)
+	{}
+
+	Property<int> mX;
+	int mY;
+};
+
+// -----------------------------------------------------------------------------
+
+void OnXChange(int i) { cout << "x has changed." << endl; }
+
+int main()
+{
+	Vector2D v(1, 2, OnXChange);
+	cout << v.mX << ", y: " << v.mY << endl;
+
+	v.mX = 10;
+	v.mY = 11;
+
+	v.mX = 20;
+	v.mY = 21;
+
+	keep_window_open();
+	return 0;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
