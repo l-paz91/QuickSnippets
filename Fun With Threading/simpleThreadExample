@@ -1,0 +1,84 @@
+// -----------------------------------------------------------------------------
+// https://lptcp.blogspot.com/
+// 
+/*
+	Fun with threading
+
+	A simple program that spins up 2 threads to output ints to the screen.
+
+*/
+// https://github.com/l-paz91/
+// -----------------------------------------------------------------------------
+
+//--INCLUDES--//
+#include <conio.h>
+#include <iostream>
+#include <mutex>
+#include <thread>
+
+using namespace std;
+
+// -----------------------------------------------------------------------------
+
+void f(mutex& pMutex)
+{
+	unique_lock<mutex> lock{ pMutex };	// aquire the lock
+
+	cout << "f: ";
+	for (int i = 1; i < 10; ++i)
+	{
+		cout << i*100/5 << '\t';
+	}
+	cout << "\n";
+
+	// lock released implicitly via destructor
+}
+
+// -----------------------------------------------------------------------------
+
+struct F
+{
+	void operator()(mutex& pMutex)
+	{
+		unique_lock<mutex> lock{ pMutex };	// aquire the lock
+
+		cout << "F: ";
+		for (int i = 1; i < 10; ++i)
+		{
+			cout << i*100/5 << '\t';
+		}
+		cout << "\n";
+
+		// lock released implicitly via destructor
+	}
+};
+
+// -----------------------------------------------------------------------------
+
+void simpleThreadExample()
+{
+	mutex m;
+
+	thread t1{ f, ref(m) };
+	thread t2{ F(), ref(m) };
+
+	t1.join();	// wait for t1
+	t2.join();	// wait for t2
+}
+
+// -----------------------------------------------------------------------------
+
+int main()
+{
+	cout << ">> Processing...\n";
+	
+	simpleThreadExample();
+
+	cout << ">> Done!\nPress any key to continue >> ";
+	_getch();
+	return 0;
+}
+
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
