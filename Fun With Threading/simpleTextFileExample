@@ -1,0 +1,127 @@
+// -----------------------------------------------------------------------------
+// https://lptcp.blogspot.com/
+// 
+/*
+	Fun with threading
+
+	A simple program that spins up 4 threads and tries to write values from a 
+	vector into a text file.
+
+*/
+// https://github.com/l-paz91/
+// -----------------------------------------------------------------------------
+
+//--INCLUDES--//
+#include <conio.h>
+#include <iostream>
+#include <fstream>
+#include <mutex>
+#include <thread>
+#include <vector>
+#include <Windows.h>
+
+using namespace std;
+
+// -----------------------------------------------------------------------------
+
+void processVectorNoMutex(int pStart, int pEnd, const vector<int>& pVector, ofstream& pFile)
+{
+	for (int i = pStart; i < pEnd; ++i)
+	{
+		pFile << pVector[i] << '\t';
+		Sleep(100);
+	}
+
+	pFile << '\n';
+}
+
+// -----------------------------------------------------------------------------
+
+void processVectorWithMutex(int pStart, int pEnd, const vector<int>& pVector, ofstream& pFile, mutex& pMutex)
+{
+	unique_lock<mutex> lock{ pMutex };	// aquire the lock
+
+	for (int i = pStart; i < pEnd; ++i)
+	{
+		pFile << i << '\t';
+	}
+
+	pFile << '\n';
+
+	// lock released implicitly via destructor
+}
+
+// -----------------------------------------------------------------------------
+
+void unsafeTextFileThreadExample()
+{
+	mutex m;
+
+	vector<int> intVector;
+	for (int i = 0; i < 100; ++i)
+	{
+		intVector.push_back(i);
+	}
+
+	//create a file to write into
+	ofstream file("unsafeTextFile.txt");
+
+	thread t1{ processVectorNoMutex,  0,  25, cref(intVector), ref(file) };
+	thread t2{ processVectorNoMutex, 25,  50, cref(intVector), ref(file) };
+	thread t3{ processVectorNoMutex, 50,  75, cref(intVector), ref(file) };
+	thread t4{ processVectorNoMutex, 75, 100, cref(intVector), ref(file) };
+
+	t1.join();	// wait for t1
+	t2.join();	// wait for t2
+	t3.join();	// wait for t3
+	t4.join();	// wait for t4
+}
+
+// -----------------------------------------------------------------------------
+
+void safeTextFileThreadExample()
+{
+	mutex m;
+
+	vector<int> intVector;
+	for (int i = 0; i < 100; ++i)
+	{
+		intVector.push_back(i);
+	}
+
+	//create a file to write into
+	ofstream file("safeTextFile.txt");
+
+	thread t1{ processVectorWithMutex,  0,  25, cref(intVector), ref(file), ref(m) };
+	thread t2{ processVectorWithMutex, 25,  50, cref(intVector), ref(file), ref(m) };
+	thread t3{ processVectorWithMutex, 50,  75, cref(intVector), ref(file), ref(m) };
+	thread t4{ processVectorWithMutex, 75, 100, cref(intVector), ref(file), ref(m) };
+
+	t1.join();	// wait for t1
+	t2.join();	// wait for t2
+	t3.join();	// wait for t3
+	t4.join();	// wait for t4
+}
+
+// -----------------------------------------------------------------------------
+
+int main()
+{
+	cout << ">> Processing...\n";
+
+	// this will produce a pretty mangled result as the threads try
+	// and access the text file simulataneously with no locks
+	unsafeTextFileThreadExample();
+
+	// this will produce the correct text file as the mutex will
+	// prevent the threads from writing to the text file when it's not
+	// their turn
+	safeTextFileThreadExample();
+
+	cout << ">> Done!\nPress any key to continue >> ";
+	_getch();
+	return 0;
+}
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
